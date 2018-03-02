@@ -1,5 +1,7 @@
 package robot;
 
-public class Piste extends Position{
+public class Piste {
+	
+	
 
 }

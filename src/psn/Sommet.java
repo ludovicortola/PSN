@@ -1,53 +1,32 @@
 package psn;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Sommet {
 	
-	private int x;
-	private int y;
-	private int numero;
-	private int degre;
-	private ArrayList<Integer> numSuccesseurs;
+	private final int x;
+	private final int y;
+	private final int id;
+	private List<Sommet> successeurs;
 	
-	Sommet(int num, int[][] matriceAdj, int x, int y) {
+	public Sommet(int id, int x, int y) {
+		this.id = id;
 		this.x = x;
 		this.y = y;
-		this.numero = num;
-		this.degre = setDegre(matriceAdj);
-		setSuccessors(matriceAdj);
-		//affiche();
 	}
 	
-	public void setSuccessors(int[][] matriceAdj) {
-		this.numSuccesseurs = new ArrayList<Integer>(); 
-		for (int i=0; i<matriceAdj.length; i++) {
-			if (matriceAdj[this.numero-1][i] == 1) {
-				this.numSuccesseurs.add(i+1);
-			}
-		}
-	}
-
 	public void affiche() {
-		System.out.println("Sommet numéro "+this.numero+" de degré "+this.degre);
+		System.out.println("Sommet numéro "+this.id+" de degré "+this.getDegre());
 	}
 
-	private int setDegre(int[][] matriceAdj) {
-		int degre = 0;
-		for (int i=0; i<matriceAdj.length; i++) {
-			if (matriceAdj[this.numero-1][i] == 1) {
-				degre++;
-			}
-		}
-		return degre;
-	}
-
-	public int getNumero() {
-		return numero;
+	
+	public int getId() {
+		return id;
 	}
 
 	public int getDegre() {
-		return degre;
+		return successeurs == null ? 0 : successeurs.size();
 	}
 	
 	public int getX() {
@@ -58,8 +37,12 @@ public class Sommet {
 		return y;
 	}
 
-	public ArrayList<Integer> getNumSuccesseurs() {
-		return this.numSuccesseurs;
+	public List<Sommet> getSuccesseurs() {
+		return successeurs;
+	}
+	
+	public void setSuccesseurs(List<Sommet> successeurs) {
+		this.successeurs = successeurs;
 	}
 	
 }

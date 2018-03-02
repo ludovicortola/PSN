@@ -5,6 +5,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import factory.AreteFactory;
+import factory.SommetFactory;
+import utils.AreteUtils;
+import utils.MathUtils;
+import utils.SommetUtils;
 
 public class Graphe {
 
@@ -12,26 +22,22 @@ public class Graphe {
 	private String[][] matriceOrientation;
 	private boolean eulerien;
 	private boolean connexe;
-	private Sommet[] listeSommets;
-	private ArrayList<Arete> listeAretes;
 
 	public Graphe(String fichierFacteurs, String fichierOrientation) {
 
 		try {
-			this.matriceAdj = setMatAdjacence(fichierFacteurs);
+			this.matriceAdj = genererMatAdjacence(fichierFacteurs);
 			affiche(matriceAdj);
 			this.matriceOrientation = setMatOrientation(fichierOrientation);
 			affiche2(matriceOrientation);
 		} catch (Throwable e) {
-			System.out.println(e.getMessage());
+			throw new IllegalStateException(e);
 		}
 
-		setListeSommets();
-		setListeAretes();
 		setEulerien();
 		setConnexe();
-		Chemin C = fleury(this.matriceAdj, listeSommets[0]);
-		C.affiche();
+		Chemin c = fleury(this.matriceAdj);
+		c.affiche();
 	}
 
 	private void affiche2(String[][] matrice) {
@@ -76,7 +82,7 @@ public class Graphe {
 	}
 
 	// Niveau 0
-	public static int[][] setMatAdjacence(String fileName) throws FileNotFoundException, IOException {
+	public static int[][] genererMatAdjacence(String fileName) throws FileNotFoundException, IOException {
 		FileReader fr = new FileReader(fileName);
 		BufferedReader br = new BufferedReader(fr);
 		String s=br.readLine();
@@ -148,58 +154,46 @@ public class Graphe {
 	}
 
 	// Niveau 1
-	private Chemin fleury(int[][] matrice, Sommet sommetDepart) {
-		Chemin C = new Chemin();
-		C.ajouteSommet(sommetDepart);
-		int[][] G = new int[matrice.length][matrice.length];
+	private Chemin fleury(int[][] matrice) {
+		Chemin c = new Chemin();
+		Map<Integer, Sommet> sommets = SommetFactory.getInstances(matriceAdj);
+		List<Arete> listeAretes = AreteFactory.getInstances(sommets, matrice);
+		Sommet sommetDepart = sommets.get(1);
+		c.ajouteSommet(sommetDepart);
+		
+		int[][] m = new int[matrice.length][matrice.length];
 		for (int i=0; i<matrice.length; i++) {
 			for (int j=0; j<matrice.length; j++) {
-				G[i][j] = matrice[i][j];
+				m[i][j] = matrice[i][j];
 			}
 		}
-		boolean matVide = isMatVide(G);
+		
+		boolean matVide = isMatVide(m);
+		
 		Sommet x = sommetDepart;
 		while (!matVide) {
-			ArrayList<Integer> succ = x.getNumSuccesseurs();
-			Sommet y = listeSommets[succ.get(0)-1];
-			succ.remove(0);
-			Arete xy = findArete(x, y);
-			while (xy.isPont(G) && succ.size() != 0) {
-				y = listeSommets[succ.get(0)-1];
-				xy = findArete(x, y);
-			}
-			C.ajouteSommet(y);
-			xy.removeArete(xy, G);
+			Sommet y;
+			Arete xy;
+			List<Sommet> succ = x.getSuccesseurs();
+			do {
+				// Prendre le successeur suivant
+				y = succ.get(0);
+				xy = AreteUtils.findArete(listeAretes, x, y);
+				xy.setPont(AreteUtils.isPont(sommets, xy, m));
+				succ.remove(0);
+			} while (xy.isPont() && !succ.isEmpty());
+			
+			c.ajouteSommet(y);
+			x.affiche();
+			y.affiche();
+			AreteUtils.removeArete(sommets, xy, m);
 			x = y;
-			matVide = isMatVide(G);
+			matVide = isMatVide(m);
 		}
-		return C;
+		return c;
 	}
 
-	private Arete findArete(Sommet x, Sommet y) {
-		Arete a = null;
-		int i = 0;
-		while (a == null && i<listeAretes.size()) {
-			Arete arete = listeAretes.get(i);
-			if (arete.getSommetDepart() == x) {
-				if (arete.getSommetArrivee() == y) {
-					a = listeAretes.get(i);
-				}
-			}
-			i++;
-		}
-		i = 0;
-		while (a == null && i<listeAretes.size()) {
-			if (listeAretes.get(i).getSommetArrivee() == x) {
-				if (listeAretes.get(i).getSommetDepart() == y) {
-					a = listeAretes.get(i);
-				}
-			}
-			i++;
-		}
-
-		return a;
-	}
+	
 
 	private static boolean isMatVide(int[][] matAdj) {
 		for (int i=0; i<matAdj.length; i++) {
@@ -210,62 +204,6 @@ public class Graphe {
 			}
 		}
 		return true;
-	}
-
-	public void setListeSommets() {
-		Sommet[] listeSommets = new Sommet[matriceAdj.length]; // Taille à modifier
-		for (int i=0; i<matriceAdj.length; i++) {
-			int x = 0;
-			int y = 0;
-			if (i == 0) {
-				x=50;
-				y=95;
-			}
-			if (i == 1) {
-				x=20;
-				y=66;
-			}
-			if (i == 2) {
-				x=80;
-				y=66;
-			}
-			if (i == 3) {
-				x=0;
-				y=25;
-			}
-			if (i == 4) {
-				x=33;
-				y=25;
-			}
-			if (i == 5) {
-				x=95;
-				y=25;
-			}
-			listeSommets[i] = new Sommet(i+1, matriceAdj, x, y);
-
-		}
-		this.listeSommets = listeSommets;
-	}
-
-	public Sommet[] getListeSommets() {
-		return listeSommets;
-	}
-
-	public void setListeAretes() {
-		ArrayList<Arete> listeAretes = new ArrayList<Arete>(); // Taille à modifier
-		for (int i=0; i<matriceAdj.length; i++){
-			for (int j=i; j<matriceAdj.length; j++){
-				if (matriceAdj[i][j] == 1) {
-					Arete a = new Arete(this.listeSommets[i], this.listeSommets[j], matriceAdj);
-					listeAretes.add(a);
-				}
-			}
-		}
-		this.listeAretes = listeAretes;
-	}
-
-	public ArrayList<Arete> getListeAretes() {
-		return listeAretes;
 	}
 
 	public String[][] getMatriceOrientation() {

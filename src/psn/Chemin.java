@@ -16,7 +16,7 @@ public class Chemin {
 	public void affiche() {
 		System.out.print("Chemin : ");
 		for (int i=0; i<this.listeSommet.size(); i++) {
-			System.out.print(listeSommet.get(i).getNumero()+" ");
+			System.out.print(listeSommet.get(i).getId()+" ");
 		}
 	}
 	

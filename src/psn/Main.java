@@ -1,5 +1,7 @@
 package psn;
 
+import java.awt.AWTException;
+import java.awt.Robot;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.util.ArrayList;
@@ -11,8 +13,8 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.Port;
 
 public class Main {
-	private final static String FICHIER_GRAPHE = "facteurN_i.txt";
-	private final static String FICHIER_ORIENTATION = "orientation.txt";
+	public final static String FICHIER_GRAPHE = "facteurN_i.txt";
+	public final static String FICHIER_ORIENTATION = "orientation.txt";
 	private final static int ACCELERATION = 3600;
 	private final static int VITESSE =360;
 
@@ -22,11 +24,12 @@ public class Main {
 	private EV3LargeRegulatedMotor JambeGauche;
 	private EV3LargeRegulatedMotor JambeDroite;
 	
-	public static void main(String[] args) throws NotBoundException, InterruptedException, IOException {
+	public static void main(String[] args) throws NotBoundException, InterruptedException, IOException, AWTException {
 		Graphe A = new Graphe(FICHIER_GRAPHE, FICHIER_ORIENTATION);
 		
 		ArrayList<ArrayList<Sommet>> coor = new ArrayList<>();
 		
+		Robot robal = new Robot();
 		
 		
 //		Main leo = new Main();
